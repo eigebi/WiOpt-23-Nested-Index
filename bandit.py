@@ -1,7 +1,13 @@
 import numpy as np
 
+# something to do to accelerate the calculation (like co_mu was not used)
+
 def index_func(l,t,p):
-    #mu的系数
+    
+    
+    #l is the generated time; t is the current age; p is the transition probability  
+    #this calculation for the index is utilized in the non-preemptive condition.
+    
     co_mu = 0
     delta_t = 0
     for i in range(1, l-t-1):
@@ -18,9 +24,14 @@ def index_func(l,t,p):
         return 0
     return I
 
-def threshold_tab(tao, p_prob):
+    # The index I returns the minimum value of dual value \mu that makes offloading and not offloading the same optimal by definition. 
+    # As it has a closed form under the non-preemptive condition, we calculate as in the last equation.
+
+def threshold_tab(tau, p_prob):
+
+    # Calculate a threshold tab for each sub-problem in advance
     threshold = []
-    for t,p in zip(tao, p_prob):
+    for t,p in zip(tau, p_prob):
         tab = np.zeros((1000))
         for i in range(1000):
             tab[i] = index_func(i, t, p)
@@ -28,6 +39,8 @@ def threshold_tab(tao, p_prob):
     return threshold
         
 def thres_L(thres_tab, cost):
+
+    # Look up the age when a new task has to be offloaded with given cost.
     temp = []
     for tab in thres_tab:
         L = np.where(tab<cost)[0][-1]+1
@@ -35,6 +48,8 @@ def thres_L(thres_tab, cost):
     return temp
 
 def expect_u(thres_L, tau, p_prob):
+
+    # this func calculate the equivalent \mu for the practical policy
     temp = 0
     for L,t,p in zip(thres_L, tau, p_prob):
         numerator = 0

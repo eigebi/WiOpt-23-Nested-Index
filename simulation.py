@@ -1,77 +1,60 @@
 from env import MEC_Model
 import numpy as np
 from matplotlib import pyplot as plt
+
+
+# r_max: the maximum scale of the system for simulation
 N = 50
 K = 2
 r_max = 21
-prob_n = [0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.7,0.7,0.7,0.7,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.1,0.1,0.1,0.1,0.1,0.1,0.88,0.88,0.88,0.88,0.35,0.35]
-#prob_n = [0.8,0.7,0.5,0.1,0.88,0.35,0.7,0.6,0.5,0.8,0.2,0.5]
-#t = [3,6,15,2,7,22,8,15,30,14,17,21]
-
-#prob_n = [1.,1.,1.,1.,1.,1.]
-#prob_n = [0.8,0.6,0.2,0.9]
-#tau = [3,7,15,2,19,22,50,36,28,42]
-t = [3,6,15,2,7,22]
-t=[3,3,3,3,3,3,3,5,5,5,5,8,8,8,8,8,8,8,22,22,22,22,22,22,2,2,2,2,15,15]
-
 prob=[0.8,0.7,0.6,0.5,0.3,0.1]
 t_=[2,4,8,16,32,64]
-
 n_=[5,10,5,5,10,15]
+
+
 prob_n=[]
 t=[]
 for i,pp,tt in zip(n_,prob,t_):
     prob_n += [pp for _ in range(i)]
     t += [tt for _ in range(i)]
+p = np.array(prob_n)
 
 steps = 10000
+
 from bandit import index_func,threshold_tab, thres_L, expect_u
 
 compare = []
 
 
 
-if __name__=='__main__':
+if __name__=='__main__': 
     
     final_lambda = []
-    for r in range(20,21):
-    #for r in [3,7,10]:
+    #for r in range(2,3):
+    for r in range(2, r_max):
         fin = []
         tau = [t for _ in range(r)]
         tau = np.array(tau).reshape(-1)
         prob_n = [prob_n for _ in range(r)]
         prob_n = np.array(prob_n).reshape(-1)
-        env = MEC_Model(N*r, tau, prob_n, preemptive=True, max_t=K*r)
+        env = MEC_Model(N*r, tau, prob_n, preemptive=False, max_t=K*r)
         status,_ = env.reset()
         result = []
         temp = np.zeros([N*r], dtype=np.float32)
         for i in range(steps):
+            # heuristic manners, greedily choose server by age
             part = status[:,0]+ (status[:,0]-status[:,1])/prob_n
             #id_t = np.argpartition(status[:,0],-K*r)[-K*r:]
-            id_t = np.argpartition(part,-K*r)[-K*r+2:]
+            id_t = np.argpartition(part,-K*r)[-K*r+1:]
             env.step(id_t)
             temp += status[:,0]
             result.append(np.sum(temp)/(i))
         result = np.array(result)/(N*r)
         fin.append(result[-1])
-        #以上是greedy 算法，可以根据part自由调整
-        '''
-        status,_ = env.reset()
-        result1 = []
-        temp = np.zeros([N*r], dtype=np.float32)
-        for i in range(steps):
-            L = status[:,0]
-            I = (L+2)*(L+1)/np.array(tau)
-            id_t = np.argpartition(I, -K*r)[-K*r:]
-            env.step(id_t)
-            temp += status[:,0]
-            result1.append(np.sum(temp)/(i+1.))
-        result1 = np.array(result1)/(N*r)
-        fin.append(result1[-1])
-        compare.append(result1[-1])
-110.25 5.75
-    
-        '''
+        
+
+
+        # index policy
         status,_ = env.reset()
         resultp = []
         
@@ -106,19 +89,9 @@ if __name__=='__main__':
     p = np.array(prob_n)
     t = np.array(tau[:N])
 
-    '''
-    nu = 50
-    beta = 0.05
-    for i in range(20000):
-        H = np.floor(np.sqrt(2*nu*t)-t)
-        for j in range(np.size(H)):
-            if H[j] < 0:
-                H[j]=1e-6
-        temp = np.sum(t/(H+t))
-        nu = nu + beta * (temp - K)
-    result2 = np.sum((3*t+H+1)/2)/N
-    result2 = np.ones_like(result1)*result2
-    '''
+    
+
+    # calculation of the equivalent dual variable for the index policy
     nu = 10
     nu_list= []
     nu_list.append(nu)
@@ -142,7 +115,7 @@ if __name__=='__main__':
     #np.save("final_lambda10",arr = np.array(final_lambda))
     #np.save("optimal_nu10",arr = np.array(nu_list))
     ''''''
-      
+    # RRP policy
     tau = [t for _ in range(8)]
     tau = np.array(tau).reshape(-1)
     prob_n = [0.8,0.7,0.5,0.1,0.88,0.35]
@@ -164,6 +137,8 @@ if __name__=='__main__':
     resultmm = np.array(resultmm)/(N*r)
 
 
+
+    # optimal solution for the subproblems, same as 'lowerbound.py' does
     ave = 0    
     for L,_t,_p in zip(H,t,p):
         EA1 = 0
