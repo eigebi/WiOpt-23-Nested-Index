@@ -95,12 +95,7 @@ plt.figure(2)
 plt.grid(axis="y", linestyle="--")
 plt.xlabel("Step", fontsize=20)
 plt.ylabel("Average EE per 100 steps", fontsize=20)
-#plt.plot(greedy_s_, label="MAMP", marker='o', markevery=1000,color='r',linewidth=3)
-#plt.plot(reducing_s_, label='MARP',  marker='x', markevery=1000,linewidth=3)
-generated = np.maximum(rrp_s_+20*np.random.randn(len(rrp_s_)),np.zeros(len(rrp_s_)))/np.max(rrp_s_)*12e6
-plt.plot(generated, label="DDPG", marker='^', markevery=1000,linewidth=1)
-#plt.plot(index_s_, label="Nested index", marker='d', markevery=1000,color='tab:blue',linewidth=3)
-#plt.plot(optimal_s, label='Lower bound',color='g',linewidth=2)
+
 plt.legend()
 plt.xticks(fontsize =13)
 plt.yticks(fontsize =13)
