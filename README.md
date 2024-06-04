@@ -1,2 +1,2 @@
 # WiOpt-23-Nested-Index
-The code will be updated soon.
+The code includes algorithms and simulations for preemptive shemes of MEC offloading.
